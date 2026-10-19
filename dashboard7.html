@@ -1,0 +1,2202 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard de Chamados - Grupo Koch</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#f4f6f9;color:#1a1a1a;font-family:'Segoe UI',Arial,sans-serif;line-height:1.5;padding:24px 28px}
+.header{text-align:center;margin-bottom:24px;padding-bottom:18px;border-bottom:3px solid #1B2A5C}
+.header .eyebrow{font-size:10px;color:#666;letter-spacing:5px;text-transform:uppercase;font-weight:600;margin-bottom:5px}
+.header h1{font-size:24px;text-transform:uppercase;letter-spacing:3px;font-weight:700;color:#1B2A5C;margin-bottom:6px}
+.header .periodo{display:inline-block;background:#1B2A5C;color:#fff;padding:4px 16px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:2px}
+.abas{display:flex;gap:6px;margin-bottom:22px;flex-wrap:wrap;border-bottom:1px solid #E5E8EE}
+.aba{background:transparent;border:none;border-bottom:3px solid transparent;color:#64748b;padding:12px 18px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;cursor:pointer;font-family:inherit;transition:all .15s}
+.aba:hover{color:#1B2A5C}
+.aba.ativa{color:#1B2A5C;border-bottom-color:#1B2A5C}
+.aba.aba-pcm.ativa{color:#7c3aed;border-bottom-color:#7c3aed}
+.aba.aba-extra.ativa{color:#f97316;border-bottom-color:#f97316}
+.filtro-data{background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 2px 8px rgba(27,42,92,.06);border:1px solid #E8EBF0;margin-bottom:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.filtro-data label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748b}
+.filtro-data input[type="date"]{padding:8px 12px;border:1.5px solid #D6DBE3;border-radius:8px;font-family:inherit;font-size:13px;color:#1B2A5C}
+.filtro-data button{background:#1B2A5C;color:#fff;border:none;padding:9px 20px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;font-family:inherit}
+.filtro-data button:hover{background:#0f1a3a}
+.filtro-data .info{font-size:12px;color:#64748b;font-weight:600}
+.filtro-data .info.filtro-ativo{background:#FEF7E0;color:#A16207;padding:6px 12px;border-radius:8px;font-weight:700}
+/* >>> FIM PARTE 1 <<< */
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:3px;font-weight:700;color:#1B2A5C;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #E5E8EE;display:flex;align-items:center;justify-content:space-between}
+.section-title .tag{font-size:10px;background:#F0F3F8;color:#64748b;padding:4px 12px;border-radius:12px;font-weight:700;letter-spacing:1px}
+.kpi-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.kpi-hero-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 3px 14px rgba(27,42,92,.07);border:1px solid #E8EBF0;text-align:center;position:relative;overflow:hidden}
+.kpi-hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:#1B2A5C}
+.kpi-hero-card.azul::before{background:#3b82f6}
+.kpi-hero-card.laranja::before{background:#f97316}
+.kpi-hero-card.verde::before{background:#16A34A}
+.kpi-hero-card.amarelo::before{background:#EAB308}
+.kpi-hero-card.roxo::before{background:#7c3aed}
+.kpi-hero-card .kpi-hero-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#64748b;font-weight:700;margin-bottom:10px}
+.kpi-hero-card .kpi-hero-valor{font-size:44px;font-weight:800;color:#1B2A5C;line-height:1}
+.kpi-hero-card .kpi-hero-sub{font-size:11px;color:#94a3b8;margin-top:8px;font-weight:600}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.kpi-card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 2px 8px rgba(27,42,92,.06);border:1px solid #E8EBF0;border-left:4px solid #1B2A5C}
+.kpi-card.verde{border-left-color:#16A34A}
+.kpi-card.amarelo{border-left-color:#EAB308}
+.kpi-card.vermelho{border-left-color:#D9182D}
+.kpi-card.azul{border-left-color:#3b82f6}
+.kpi-card.laranja{border-left-color:#f97316}
+.kpi-card.roxo{border-left-color:#7c3aed}
+.kpi-label{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;font-weight:700;margin-bottom:6px}
+.kpi-valor{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1}
+.kpi-detalhe{font-size:11px;color:#94a3b8;margin-top:6px;font-weight:500}
+.grafico-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 3px 14px rgba(27,42,92,.07);border:1px solid #E8EBF0;margin-bottom:22px}
+.grafico-titulo{font-size:13px;text-transform:uppercase;letter-spacing:2px;font-weight:700;color:#1B2A5C;margin-bottom:4px}
+.grafico-sub{font-size:12px;color:#94a3b8;margin-bottom:18px}
+.grafico-wrap{position:relative;height:320px;padding-top:30px}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:30px}
+.cat-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(27,42,92,.06);border:1px solid #E8EBF0;border-top:4px solid #1B2A5C;cursor:pointer;transition:all .18s}
+.cat-card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(27,42,92,.13)}
+.cat-card.verde{border-top-color:#16A34A}
+.cat-card.amarelo{border-top-color:#EAB308}
+.cat-card.vermelho{border-top-color:#D9182D}
+.cat-card.pcm{border-top-color:#7c3aed}
+.cat-card.extra{border-top-color:#f97316}
+.cat-nome{font-size:15px;font-weight:800;color:#1B2A5C;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.cat-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F0F3F8}
+.cat-info{text-align:center}
+.cat-info-label{font-size:9px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px}
+.cat-info-valor{font-size:20px;font-weight:800;color:#1a1a1a;line-height:1}
+.cat-progresso{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cat-progresso-label{font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.badge{font-size:13px;font-weight:800;padding:5px 14px;border-radius:20px;display:inline-block}
+.badge.verde{background:#E8F8EF;color:#16A34A}
+.badge.amarelo{background:#FEF7E0;color:#A16207}
+.badge.vermelho{background:#FEF0F0;color:#D9182D}
+/* >>> FIM PARTE 2 <<< */
+.tabela{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:18px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(27,42,92,.05)}
+.tabela thead{background:#1B2A5C;color:#fff}
+.tabela th{padding:11px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+.tabela td{padding:10px 14px;border-bottom:1px solid #F0F3F8;color:#334155;font-weight:500}
+.tabela tr:last-child td{border-bottom:none}
+.tabela tr:hover td{background:#F8FAFC}
+.tabela .rank{font-weight:800;color:#1B2A5C}
+.tabela .rank.ouro{color:#CA8A04}
+.tabela .rank.prata{color:#64748b}
+.tabela .rank.bronze{color:#b45309}
+.tabela .num{text-align:center;font-weight:700}
+.tabela .taxa{text-align:center}
+.tabela .taxa span{display:inline-block;padding:3px 10px;border-radius:12px;font-weight:800;font-size:12px}
+.tabela .taxa span.verde{background:#E8F8EF;color:#16A34A}
+.tabela .taxa span.amarelo{background:#FEF7E0;color:#A16207}
+.tabela .taxa span.vermelho{background:#FEF0F0;color:#D9182D}
+.tabela .nome-clicavel{color:#1B2A5C;font-weight:700;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(27,42,92,.3);text-underline-offset:3px}
+.tabela .nome-clicavel:hover{color:#0f1a3a}
+.prest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:30px}
+.prest-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 3px 14px rgba(27,42,92,.07);border:1px solid #E8EBF0;border-top:4px solid #1B2A5C;cursor:pointer;transition:all .18s}
+.prest-card:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(27,42,92,.13)}
+.prest-card.verde{border-top-color:#16A34A}
+.prest-card.amarelo{border-top-color:#EAB308}
+.prest-card.vermelho{border-top-color:#D9182D}
+.prest-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #F0F3F8;flex-wrap:wrap;gap:8px}
+.prest-nome{font-size:14px;font-weight:800;color:#1a1a1a;text-transform:uppercase;letter-spacing:.5px}
+.prest-cat-badge{font-size:10px;background:#1B2A5C;color:#fff;padding:3px 10px;border-radius:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
+.bloco-lojas{background:#F8FAFC;border-radius:10px;padding:14px;margin-bottom:14px;border:1px solid #E8EBF0}
+.bloco-lojas .bloco-titulo{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;font-weight:800;color:#1B2A5C;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #E2E8F0}
+.loja-tag{display:inline-block;background:#F1F5F9;color:#1B2A5C;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:700;margin:2px;border:1px solid #E2E8F0}
+.loja-tag.aberto{background:#FEF0F0;color:#D9182D;border-color:#FECACA}
+.loja-tag.extra{background:#FEF7E0;color:#A16207;border-color:#FDE68A}
+.btn-voltar{background:#fff;color:#1B2A5C;border:1.5px solid #D6DBE3;padding:8px 18px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;cursor:pointer;font-family:inherit;margin-bottom:18px}
+.btn-voltar:hover{background:#1B2A5C;color:#fff;border-color:#1B2A5C}
+.btn-ordenar{background:#fff;color:#64748b;border:1.5px solid #D6DBE3;padding:8px 16px;border-radius:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;cursor:pointer;font-family:inherit;margin-bottom:16px;margin-right:6px}
+.btn-ordenar.ativa{background:#1B2A5C;color:#fff;border-color:#1B2A5C}
+.loading{text-align:center;padding:60px 20px;color:#94a3b8;font-size:14px;font-weight:600}
+.erro{background:#FEF0F0;border:2px solid #D9182D;color:#D9182D;padding:16px;border-radius:10px;margin:20px auto;max-width:900px;text-align:center;font-size:13px;font-weight:700}
+.vazio{text-align:center;color:#94a3b8;padding:40px;font-size:13px;font-weight:600;font-style:italic}
+.rodape{text-align:center;margin-top:44px;padding-top:20px;border-top:1px solid #E5E8EE;color:#94a3b8;font-size:10px;letter-spacing:3px;text-transform:uppercase;font-weight:600}
+@media (max-width:1000px){
+  .kpi-hero,.kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .cat-grid,.prest-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:600px){
+  body{padding:14px 12px}
+  .kpi-hero,.kpi-grid,.cat-grid,.prest-grid{grid-template-columns:1fr}
+  .header h1{font-size:18px}
+  .abas{overflow-x:auto;white-space:nowrap}
+  .aba{padding:10px 12px;font-size:11px}
+}
+.aba{padding:10px 12px;font-size:11px}
+
+/* Layout do Detalhe */
+.detalhe-bloco-linha { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 12px; }
+.detalhe-bloco-linha.tres-colunas { grid-template-columns: repeat(3, 1fr); }
+.detalhe-titulo-secao { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; margin-top: 16px; }
+.detalhe-titulo-secao.corretiva { color: #c2410c; }
+.detalhe-titulo-secao.preventiva { color: #6d28d9; }
+
+</style></style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">GRUPO KOCH</div>
+  <h1>Dashboard de Chamados</h1>
+  <div class="periodo">SETEMBRO/26</div>
+</div>
+
+<div id="conteudo">
+  <div class="loading">Carregando dados da planilha...</div>
+</div>
+
+<div class="rodape">Grupo Koch &bull; Dashboard de Chamados</div>
+
+<script>
+/* >>> FIM PARTE 3 <<< */
+// ============================================================
+// CONFIGURAÇÃO GERAL
+// ============================================================
+const URL_CSV = "chamados.csv";
+
+const CORES = {
+  azul:     "#3b82f6",
+  laranja:  "#f97316",
+  verde:    "#16A34A",
+  amarelo:  "#EAB308",
+  vermelho: "#D9182D",
+  navy:     "#1B2A5C",
+  roxo:     "#7c3aed",
+  cinza:    "#64748b"
+};
+
+// ============================================================
+// ESTADO GLOBAL DA APLICAÇÃO
+// ============================================================
+let TODOS_CHAMADOS = [];
+let CHAMADOS_FILTRADOS = [];
+let ABA_ATUAL = "home";
+let CATEGORIA_SELECIONADA = null;
+let SUBGERENTE_SELECIONADO = null;
+let REGIONAL_SELECIONADO = null;
+let PRESTADOR_SELECIONADO = null;
+let ORDEM_ATUAL = "alfabetica";
+let DATA_FILTRO = "";
+let GRAFICOS = {};
+
+// >>> FIM PARTE 4 <<<
+// ============================================================
+// MAPA DE SUBGERENTES -> REGIONAL -> LOJAS
+// ============================================================
+const SUBGERENTES = {
+  "RAONI": {
+    regional: "DIEGO",
+    lojas: ["26","28","35","39","42","45","50","51","59","64","65","71","76","77","92","94","103","104","107","111"]
+  },
+  "MARCOS": {
+    regional: "CICERO",
+    lojas: ["5","22","25","30","32","33","34","36","40","43","46","49","63","72","74","80","89","100","106","110"]
+  },
+  "URIEL": {
+    regional: "JEFFERSON",
+    lojas: ["5","22","25","30","32","33","34","36","40","43","46","49","63","72","74","80","89","100","106","110"]
+  },
+  "JAMISSON": {
+    regional: "ADEMIR",
+    lojas: ["4","6","7","9","14","15","18","31","37","41","52","69","82","95","99","CD"]
+  },
+  "JUVERLEI": {
+    regional: "LEANDRO",
+    lojas: ["1","2","10","13","24","29","53","56","68","73","78","83","88","90","91","96","105","800","889","CD 2"]
+  },
+  "CRISTIANO": {
+    regional: "EVERTON",
+    lojas: ["47","54","57","58","60","61","62","66","67","70","75","79","84","85","86","93","112"]
+  }
+};
+
+// ============================================================
+// MAPA REVERSO: LOJA -> SUBGERENTE(S)
+// ============================================================
+const LOJA_PARA_SUBGERENTE = {};
+Object.entries(SUBGERENTES).forEach(([sub, info]) => {
+  info.lojas.forEach(loja => {
+    const norm = String(loja).toUpperCase().trim().replace(/^LOJA\s+/, "");
+    const chave = /^\d+$/.test(norm) ? String(parseInt(norm, 10)) : norm;
+    if (!LOJA_PARA_SUBGERENTE[chave]) LOJA_PARA_SUBGERENTE[chave] = [];
+    if (!LOJA_PARA_SUBGERENTE[chave].includes(sub)) {
+      LOJA_PARA_SUBGERENTE[chave].push(sub);
+    }
+  });
+});
+
+// ============================================================
+// MAPA REVERSO: REGIONAL -> SUBGERENTE
+// ============================================================
+const REGIONAL_PARA_SUBGERENTE = {};
+Object.entries(SUBGERENTES).forEach(([sub, info]) => {
+  REGIONAL_PARA_SUBGERENTE[info.regional] = sub;
+});
+
+// >>> FIM PARTE 5 <<<
+// ============================================================
+// MAPA DE CATEGORIAS POR ATENDENTE
+// Ordem importa: matches mais específicos primeiro
+// ============================================================
+const MAPA_CATEGORIAS = [
+  // PCM
+  { match: "PCM",       cat: "PCM",          pcm: true },
+  { match: "OSNIR",     cat: "PCM",          pcm: true },
+
+  // Extras
+  { match: "EXTRAS",    cat: "Extras",       extra: true },
+
+  // Empilhadeiras
+  { match: "SAS EMPILHADEIRAS",     cat: "Empilhadeiras" },
+  { match: "TRANSPOTECH",           cat: "Empilhadeiras" },
+  { match: "EMPILHADEIRA",          cat: "Empilhadeiras" },
+
+  // Paleteiras
+  { match: "PALETEIRA",             cat: "Paleteiras" },
+
+  // Carrinhos
+  { match: "CARRINHO",              cat: "Carrinhos" },
+  { match: "INOVE",                 cat: "Carrinhos" },
+
+  // Mobiliário
+  { match: "RENOFLEX",              cat: "Mobiliário" },
+  { match: "CADEIRA",               cat: "Mobiliário" },
+
+  // Padaria / Cozinha
+  { match: "MANTEC",                cat: "Padaria" },
+
+  // Câmaras
+  { match: "COLDSERV",              cat: "Câmaras" },
+
+  // Climatização
+  { match: "LUCFRIO",               cat: "Climatização" },
+  { match: "GILBERTO",              cat: "Climatização" },
+  { match: "CLIMATEC",              cat: "Climatização" },
+  { match: "ABMAEL",                cat: "Climatização" },
+
+  // Refrigeração (Baseado na sua lista exata!)
+  { match: "WOLF",                  cat: "Refrigeração" },
+  { match: "ELOS TECH",             cat: "Refrigeração" },
+  { match: "MACFRIO",               cat: "Refrigeração" },
+  { match: "ADEMIR REFRIG",         cat: "Refrigeração" },
+  { match: "DANIEL ELETROMUNDO REFRIG", cat: "Refrigeração" },
+  { match: "DIEGO ELETROMUNDO REFRIG", cat: "Refrigeração" },
+  { match: "RF ROBSOM",             cat: "Refrigeração" },
+  { match: "ROBSOM PREVENTIVAS",    cat: "Refrigeração" },
+  { match: "JHONATHAN BITTENCOURT", cat: "Refrigeração" },
+  { match: "RAFAEL BITTENCOURT",    cat: "Refrigeração" },
+
+  // Elétrica
+  { match: "LUCIANO ELETROMUNDO",   cat: "Elétrica" },
+  { match: "ADEMIR ELÉTRICA",       cat: "Elétrica" },
+  { match: "MARCOS ELETROMUNDO",    cat: "Elétrica" },
+  { match: "DIEGO ELETROMUNDO",     cat: "Elétrica" },
+  { match: "FILIPE ELETROMUNDO",    cat: "Elétrica" },
+  { match: "NSC EL",                cat: "Elétrica" },
+  { match: "RUDINEI NOBREAKS",      cat: "Elétrica" },
+  { match: "TIJUELETRO",            cat: "Elétrica" },
+
+  // Telhados
+  { match: "ALEMÃO",                cat: "Telhados" },
+
+  // Jardim
+  { match: "ISRAEL",                cat: "Jardim" },
+  { match: "JASMIM",                cat: "Jardim" },
+
+  // Geradores
+  { match: "JOEL GERADORES",        cat: "Geradores" },
+  { match: "LUCIANO GERADORES",     cat: "Geradores" },
+
+  // Predial (SOMENTE OS QUE VOCÊ PASSOU)
+  { match: "DOLIRIO PREDIAL",       cat: "Predial" },
+  { match: "MARCIO PREDIAL",        cat: "Predial" },
+  { match: "VALDIR LIMA",           cat: "Predial" },
+  { match: "RODRIGO PREDIAL",       cat: "Predial" },
+  { match: "DJA PREDIAL",           cat: "Predial" },
+  { match: "LEONARDO PREDIAL",      cat: "Predial" },
+  { match: "AMARAL PREDIAL",        cat: "Predial" },
+  { match: "RENATO LIMA",           cat: "Predial" },
+  { match: "DOLIRIO SERRALHERIA",   cat: "Predial" },
+  { match: "DM SERRALHERIA",        cat: "Predial" },
+  { match: "PLANEJADOS",            cat: "Predial" },
+
+  // Regionais
+  { match: "REGIONAL",              cat: "Regionais" },
+  { match: "SUBGERENTE",            cat: "Regionais" }
+];
+
+// ============================================================
+// CATEGORIAS OFICIAIS (ordem de exibição)
+// ============================================================
+const CATEGORIAS_OFICIAIS = [
+  "Elétrica", "Climatização", "Refrigeração", "Predial",
+  "Telhados", "Jardim", "Geradores", "Regionais",
+  "Empilhadeiras", "Paleteiras", "Carrinhos", "Mobiliário",
+  "Padaria", "Câmaras", "PCM", "Extras NSC", "Extras DJA"
+];
+
+// >>> FIM PARTE 6 <<<
+// ============================================================
+// FUNÇÕES AUXILIARES
+// ============================================================
+
+// Remove acentos e coloca em maiúsculas
+function normalizar(txt) {
+  return String(txt || "").toUpperCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+// Normaliza nome de loja para bater com o mapa
+function normalizarLoja(loja) {
+  if (!loja) return "";
+  let l = String(loja).toUpperCase().trim();
+  l = l.replace(/^LOJA\s+/, "");
+  if (/^\d+$/.test(l)) l = String(parseInt(l, 10));
+  if (l === "CD" || l === "CD 1" || l === "CD1") l = "CD";
+  if (l === "CD 2" || l === "CD2") l = "CD 2";
+  if (l.includes("CP 800") || l === "800") l = "800";
+  if (l.includes("889")) l = "889";
+  if (l.includes("ADM ITAPEMA")) l = "ADM ITAPEMA";
+  if (l.includes("ADM TIJUCAS")) l = "ADM TIJUCAS";
+  if (l.includes("NAO IDENTIFICADO") || l.includes("NÃO IDENTIFICADO")) l = "107";
+  return l;
+}
+
+// Classifica o atendente em uma categoria
+function classificarAtendente(nome) {
+  if (!nome) return { cat: "Outros", pcm: false, extra: false };
+  const n = normalizar(nome);
+  for (const regra of MAPA_CATEGORIAS) {
+    if (n.includes(normalizar(regra.match))) {
+      return { cat: regra.cat, pcm: !!regra.pcm, extra: !!regra.extra };
+    }
+  }
+  return { cat: "Outros", pcm: false, extra: false };
+}
+
+// Classifica o status (aberto ou fechado)
+function classificarStatus(status) {
+  if (!status) return "aberto";
+  const s = String(status).toLowerCase();
+  if (s === "encerrado" || s.includes("decurso de prazo") || s.includes("fechado pelo")) return "fechado";
+  return "aberto";
+}
+
+// Classifica o tipo (preventiva ou corretiva)
+function classificarTipo(tipo) {
+  if (!tipo) return "corretiva";
+  const t = normalizar(tipo);
+  if (t.startsWith("PREVENTIVO")) return "preventiva";
+  return "corretiva";
+}
+
+// Converte "DD/MM/AAAA" em "AAAA-MM-DD" para comparação
+function dataParaISO(s) {
+  if (!s) return "";
+  const parts = String(s).trim().split("/");
+  if (parts.length !== 3) return "";
+  return `${parts[2]}-${parts[1].padStart(2,"0")}-${parts[0].padStart(2,"0")}`;
+}
+
+// Calcula taxa de conclusão (%)
+function calcularTaxa(total, fechados) {
+  if (total === 0) return 0;
+  return Math.round((fechados / total) * 100);
+}
+
+// Define a cor do badge pela taxa
+function corTaxa(taxa) {
+  if (taxa >= 85) return "verde";
+  if (taxa >= 60) return "amarelo";
+  return "vermelho";
+}
+
+// Retorna emoji de medalha pelo ranking
+function medalha(pos) {
+  if (pos === 1) return "🥇";
+  if (pos === 2) return "🥈";
+  if (pos === 3) return "🥉";
+  return "";
+}
+
+// >>> FIM PARTE 7 <<<
+// ============================================================
+// PARSER CSV (suporta campos com vírgula dentro de aspas)
+// ============================================================
+function parseCSV(texto) {
+  const linhas = [];
+  let campo = "", linha = [], dentroAspas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const c = texto[i], prox = texto[i + 1];
+    if (c === '"') {
+      if (dentroAspas && prox === '"') { campo += '"'; i++; }
+      else dentroAspas = !dentroAspas;
+    } else if (c === ',' && !dentroAspas) {
+      linha.push(campo); campo = "";
+    } else if ((c === '\n' || c === '\r') && !dentroAspas) {
+      if (c === '\r' && prox === '\n') i++;
+      if (campo !== "" || linha.length > 0) {
+        linha.push(campo);
+        linhas.push(linha);
+        linha = []; campo = "";
+      }
+    } else {
+      campo += c;
+    }
+  }
+  if (campo !== "" || linha.length > 0) {
+    linha.push(campo);
+    linhas.push(linha);
+  }
+  return linhas;
+}
+
+// ============================================================
+// CARREGAMENTO DOS DADOS DA PLANILHA
+// ============================================================
+async function carregarDados() {
+      const container = document.getElementById("conteudo");
+  container.innerHTML = `
+    <div style="background:#fff;border-radius:14px;padding:40px;box-shadow:0 4px 16px rgba(27,42,92,.08);border:1px solid #E8EBF0;text-align:center;max-width:640px;margin:40px auto;">
+      <div style="font-size:48px;margin-bottom:16px;">📂</div>
+      <div style="font-size:20px;font-weight:800;color:#1B2A5C;text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;">Selecione o arquivo CSV</div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:24px;line-height:1.6;">
+        Escolha o arquivo <strong style="color:#1B2A5C;">chamados.csv</strong> que está na mesma pasta deste dashboard.<br>
+        Os dados serão carregados automaticamente.
+      </div>
+      <input type="file" id="input-csv" accept=".csv" style="display:none;">
+      <button id="btn-escolher" style="background:#1B2A5C;color:#fff;border:none;padding:14px 32px;border-radius:10px;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;cursor:pointer;font-family:inherit;">
+        Escolher arquivo CSV
+      </button>
+      <div id="mensagem-loading" style="margin-top:20px;font-size:12px;color:#94a3b8;"></div>
+    </div>
+  `;
+
+  const inputFile = document.getElementById("input-csv");
+  const btnEscolher = document.getElementById("btn-escolher");
+  const msg = document.getElementById("mensagem-loading");
+
+  btnEscolher.onclick = () => inputFile.click();
+
+  inputFile.onchange = (e) => {
+    const arquivo = e.target.files[0];
+    if (!arquivo) return;
+    msg.textContent = "Carregando " + arquivo.name + "...";
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        processarCSV(event.target.result);
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="erro">Erro ao processar CSV: ${err.message}</div>`;
+      }
+    };
+    reader.onerror = () => {
+      container.innerHTML = `<div class="erro">Erro ao ler o arquivo. Tente novamente.</div>`;
+    };
+    reader.readAsText(arquivo, "UTF-8");
+  };
+}
+
+function processarCSV(texto) {
+  const linhas = parseCSV(texto);
+  if (linhas.length < 2) throw new Error("Planilha vazia ou formato inválido.");
+
+  const header = linhas[0].map(h => normalizar(h));
+  const idx = {
+    loja:       header.indexOf("LOJA"),
+    subgerente: header.indexOf("SUBGERENTE"),
+    tipo:       header.indexOf("TIPO DO CHAMADO"),
+    atendente:  header.indexOf("ATENDENTE"),
+    dataAbert:  header.findIndex(h => h.includes("DATA DE ABERTURA")),
+    dataEncerr: header.findIndex(h => h.includes("DATA DA ENCERRAMENTO")),
+    status:     header.indexOf("STATUS")
+  };
+
+  if (idx.atendente === -1 || idx.status === -1) {
+    throw new Error("Colunas essenciais não encontradas. Header: " + header.join(" | "));
+  }
+
+  TODOS_CHAMADOS = [];
+
+  for (let i = 1; i < linhas.length; i++) {
+    const l = linhas[i];
+    if (!l || l.length < 2) continue;
+
+    const atendente = (l[idx.atendente] || "").trim();
+    const status    = (l[idx.status]    || "").trim();
+    if (!atendente) continue;
+
+    const loja      = idx.loja       >= 0 ? (l[idx.loja]       || "").trim() : "";
+    const subgRaw   = idx.subgerente >= 0 ? (l[idx.subgerente] || "").trim() : "";
+    const tipoRaw   = idx.tipo       >= 0 ? (l[idx.tipo]       || "").trim() : "";
+    const dataAbert = idx.dataAbert  >= 0 ? (l[idx.dataAbert]  || "").trim() : "";
+    const dataEnc   = idx.dataEncerr >= 0 ? (l[idx.dataEncerr] || "").trim() : "";
+
+    const cls       = classificarAtendente(atendente);
+    const tipo      = classificarTipo(tipoRaw);
+    const statusCls = classificarStatus(status);
+
+    const lojaNorm = normalizarLoja(loja);
+
+    let subg = normalizar(subgRaw);
+    if (!subg && LOJA_PARA_SUBGERENTE[lojaNorm]) {
+      subg = LOJA_PARA_SUBGERENTE[lojaNorm][0];
+    }
+
+    let ehExtra = cls.extra;
+    const nAt = normalizar(atendente);
+    if (nAt.includes("REGIONAL MANUTEN")) {
+      const nomeRegional = nAt.replace("REGIONAL MANUTENCAO", "").replace("REGIONAL MANUTEN", "").trim();
+      let subgDonoDoRegional = null;
+      Object.entries(SUBGERENTES).forEach(([sub, info]) => {
+        if (normalizar(info.regional).includes(nomeRegional) ||
+            nomeRegional.includes(normalizar(info.regional))) {
+          subgDonoDoRegional = sub;
+        }
+      });
+      if (subgDonoDoRegional && subg && subg !== subgDonoDoRegional) {
+        ehExtra = true;
+      }
+    }
+
+    TODOS_CHAMADOS.push({
+      loja, lojaNorm, subg, atendente, tipo, status, statusCls,
+      dataAbert, dataEnc,
+      dataAbertISO: dataParaISO(dataAbert),
+      dataEncISO:   dataParaISO(dataEnc),
+      categoria:    cls.cat,
+      pcm:          cls.pcm,
+      extra:        ehExtra
+    });
+  }
+
+  if (TODOS_CHAMADOS.length === 0) throw new Error("Nenhum chamado válido encontrado.");
+
+  CHAMADOS_FILTRADOS = TODOS_CHAMADOS.slice();
+  console.log(`✓ ${TODOS_CHAMADOS.length} chamados carregados.`);
+
+    document.getElementById("conteudo").innerHTML = "";
+  renderizarAbas();
+  renderizarHome();
+}
+// ============================================================
+// FILTRAGEM POR DATA (abertura OU encerramento)
+// ============================================================
+function aplicarFiltroData(chamados) {
+  if (!DATA_FILTRO) return chamados.slice();
+  return chamados.filter(c =>
+    c.dataAbertISO === DATA_FILTRO || c.dataEncISO === DATA_FILTRO
+  );
+}
+
+// ============================================================
+// AGREGAÇÃO GENÉRICA POR CHAVE (subgerente, regional, categoria, atendente)
+// ============================================================
+function agruparPor(chamados, chaveFn) {
+  const map = new Map();
+  chamados.forEach(c => {
+    const k = chaveFn(c);
+    if (!k || k === "Outros") return; // ignora sem chave
+    if (!map.has(k)) {
+      map.set(k, { total: 0, fechados: 0, abertos: 0, preventivas: 0, corretivas: 0 });
+    }
+    const g = map.get(k);
+    g.total++;
+    if (c.statusCls === "fechado") g.fechados++; else g.abertos++;
+    if (c.tipo === "preventiva") g.preventivas++; else g.corretivas++;
+  });
+
+  // Calcula taxa e ordena por taxa desc
+  const arr = Array.from(map.entries()).map(([nome, dados]) => {
+    dados.nome = nome;
+    dados.taxa = calcularTaxa(dados.total, dados.fechados);
+    return dados;
+  });
+  return arr;
+}
+
+// ============================================================
+// AGRUPAR POR SUBGERENTE
+// ============================================================
+function agruparPorSubgerente(chamados) {
+  return agruparPor(chamados, c => c.subg || null);
+}
+
+// ============================================================
+// AGRUPAR POR REGIONAL
+// ============================================================
+function agruparPorRegional(chamados) {
+  return agruparPor(chamados, c => {
+    if (!c.subg) return null;
+    return SUBGERENTES[c.subg] ? SUBGERENTES[c.subg].regional : null;
+  });
+}
+
+// ============================================================
+// AGRUPAR POR CATEGORIA
+// ============================================================
+function agruparPorCategoria(chamados) {
+  return agruparPor(chamados, c => c.categoria);
+}
+
+// ============================================================
+// AGRUPAR POR PRESTADOR (dentro de uma categoria)
+// ============================================================
+function agruparPorPrestador(chamados, categoria) {
+  const filtrados = chamados.filter(c => c.categoria === categoria);
+  return agruparPor(filtrados, c => c.atendente);
+}
+
+// ============================================================
+// EXTRA: chamados onde o prestador atendeu fora de sua região
+// ============================================================
+function listarExtras(chamados) {
+  return chamados.filter(c => c.extra || c.categoria === "Extras NSC" || c.categoria === "Extras DJA");
+}
+
+// ============================================================
+// ESTATÍSTICAS DE UM PRESTADOR ESPECÍFICO
+// ============================================================
+function estatisticasPrestador(chamados, nomePrestador) {
+  const filt = chamados.filter(c => c.atendente === nomePrestador);
+  const total = filt.length;
+  const fechados = filt.filter(c => c.statusCls === "fechado").length;
+  const abertos = total - fechados;
+  const taxa = calcularTaxa(total, fechados);
+
+  // Lojas atendidas (contagem)
+  const porLoja = new Map();
+  filt.forEach(c => {
+    const k = c.lojaNorm;
+    if (!porLoja.has(k)) porLoja.set(k, { total: 0, abertos: 0 });
+    const g = porLoja.get(k);
+    g.total++;
+    if (c.statusCls === "aberto") g.abertos++;
+  });
+
+  const lojasOrdenadas = Array.from(porLoja.entries())
+    .map(([loja, d]) => ({ loja, ...d }))
+    .sort((a, b) => b.total - a.total);
+
+  const lojasMaisAtende = lojasOrdenadas.slice(0, 5);
+  const lojasMenosAtende = lojasOrdenadas.slice(-5).reverse();
+  const lojasMaisAbertos = lojasOrdenadas.slice().sort((a, b) => b.abertos - a.abertos).slice(0, 5);
+
+  // Lojas que são "dele" mas não foi (baseado na região)
+  // Considera a região do prestador via prefixo do nome
+  let lojasDele = [];
+  const nAt = normalizar(nomePrestador);
+  // Encontra subgerente cujo regional aparece no nome (ex: DIEGO REGIONAL)
+  let subDono = null;
+  Object.entries(SUBGERENTES).forEach(([sub, info]) => {
+    if (nAt.includes(normalizar(info.regional))) subDono = sub;
+  });
+  // Também aceita subgerentes diretos (RAONI SUBGERENTE)
+  Object.keys(SUBGERENTES).forEach(sub => {
+    if (nAt.includes(sub)) subDono = sub;
+  });
+  if (subDono && SUBGERENTES[subDono]) {
+    const todasDele = SUBGERENTES[subDono].lojas.map(normalizarLoja);
+    const atendidas = new Set(lojasOrdenadas.map(l => l.loja));
+    lojasDele = todasDele.filter(l => !atendidas.has(l));
+  }
+
+  return {
+    nome: nomePrestador,
+    total, fechados, abertos, taxa,
+    lojasMaisAtende,
+    lojasMenosAtende,
+    lojasMaisAbertos,
+    lojasNaoAtendidas: lojasDele,
+    categoria: filt[0] ? filt[0].categoria : "Outros"
+  };
+}
+
+// ============================================================
+// KPIs GERAIS DO DASHBOARD
+// ============================================================
+function kpisGerais(chamados) {
+  const total = chamados.length;
+  const fechados = chamados.filter(c => c.statusCls === "fechado").length;
+  const abertos = total - fechados;
+  const preventivas = chamados.filter(c => c.tipo === "preventiva").length;
+  const corretivas = total - preventivas;
+  const taxa = calcularTaxa(total, fechados);
+  return { total, fechados, abertos, preventivas, corretivas, taxa };
+}
+
+// >>> FIM PARTE 9 <<<
+// ============================================================
+// SISTEMA DE ABAS
+// ============================================================
+const ABAS = [
+  { id: "home",       label: "🏠 Home" },
+  { id: "subgerentes",label: "👔 Subgerentes" },
+  { id: "regionais",  label: "🗺️ Regionais" },
+  { id: "categorias", label: "🔧 Categorias" },
+  { id: "pcm",        label: "📋 PCM", cls: "aba-pcm" },
+  { id: "extras",     label: "⭐ Extras", cls: "aba-extra" },
+  { id: "outros",     label: "❓ Outros" }
+];
+
+function renderizarAbas() {
+  const div = document.getElementById("conteudo");
+  // Se já existe a estrutura, apenas atualiza a aba ativa
+  let abas = document.getElementById("abas-container");
+  if (!abas) {
+    abas = document.createElement("div");
+    abas.id = "abas-container";
+    abas.className = "abas";
+    ABAS.forEach(a => {
+      const b = document.createElement("button");
+      b.className = "aba" + (a.cls ? " " + a.cls : "");
+      b.dataset.aba = a.id;
+      b.textContent = a.label;
+      b.onclick = () => trocarAba(a.id);
+      abas.appendChild(b);
+    });
+    div.innerHTML = "";
+    div.appendChild(abas);
+  }
+  atualizarAbaAtiva();
+}
+
+function atualizarAbaAtiva() {
+  document.querySelectorAll(".aba").forEach(b => {
+    b.classList.toggle("ativa", b.dataset.aba === ABA_ATUAL);
+  });
+}
+
+function trocarAba(aba) {
+  ABA_ATUAL = aba;
+  CATEGORIA_SELECIONADA = null;
+  SUBGERENTE_SELECIONADO = null;
+  REGIONAL_SELECIONADO = null;
+  PRESTADOR_SELECIONADO = null;
+  atualizarAbaAtiva();
+  const conteudo = document.getElementById("conteudo");
+  // Remove tudo exceto a barra de abas
+  Array.from(conteudo.children).forEach(el => {
+    if (el.id !== "abas-container") el.remove();
+  });
+  switch (aba) {
+    case "home":        renderizarHome();        break;
+    case "subgerentes": renderizarSubgerentes(); break;
+    case "regionais":   renderizarRegionais();   break;
+    case "categorias":  renderizarCategorias();  break;
+    case "pcm":         renderizarPCM();         break;
+    case "extras":      renderizarExtras();      break;
+    case "outros":      renderizarOutros();      break;
+  }
+}
+
+// ============================================================
+// FILTRO DE DATA
+// ============================================================
+function renderizarFiltroData() {
+  const wrap = document.createElement("div");
+  wrap.className = "filtro-data";
+  wrap.innerHTML = `
+    <label>📅 Filtrar por data:</label>
+    <input type="date" id="input-data" value="${DATA_FILTRO}">
+    <button id="btn-aplicar">Aplicar</button>
+    <button id="btn-limpar">Limpar</button>
+    <span class="info ${DATA_FILTRO ? 'filtro-ativo' : ''}" id="info-filtro">
+      ${DATA_FILTRO ? `Filtrando por: ${DATA_FILTRO.split('-').reverse().join('/')}` : `Mostrando todos os ${TODOS_CHAMADOS.length} chamados`}
+    </span>
+  `;
+  document.getElementById("conteudo").appendChild(wrap);
+
+  document.getElementById("btn-aplicar").onclick = () => {
+    DATA_FILTRO = document.getElementById("input-data").value;
+    CHAMADOS_FILTRADOS = aplicarFiltroData(TODOS_CHAMADOS);
+    trocarAba(ABA_ATUAL);
+  };
+  document.getElementById("btn-limpar").onclick = () => {
+    DATA_FILTRO = "";
+    CHAMADOS_FILTRADOS = TODOS_CHAMADOS.slice();
+    trocarAba(ABA_ATUAL);
+  };
+}
+
+// ============================================================
+// ABA HOME — KPIs + Gráficos + Cards de Categoria
+// ============================================================
+function renderizarHome() {
+  const conteudo = document.getElementById("conteudo");
+  renderizarFiltroData();
+
+  const k = kpisGerais(CHAMADOS_FILTRADOS);
+
+  // Hero KPIs
+  const hero = document.createElement("div");
+  hero.className = "kpi-hero";
+  hero.innerHTML = `
+    <div class="kpi-hero-card azul">
+      <div class="kpi-hero-label">Total de Chamados</div>
+      <div class="kpi-hero-valor">${k.total}</div>
+      <div class="kpi-hero-sub">${DATA_FILTRO ? 'no dia selecionado' : 'em Setembro/26'}</div>
+    </div>
+    <div class="kpi-hero-card laranja">
+      <div class="kpi-hero-label">Corretivas</div>
+      <div class="kpi-hero-valor">${k.corretivas}</div>
+      <div class="kpi-hero-sub">${k.total ? Math.round(k.corretivas/k.total*100) : 0}% do total</div>
+    </div>
+    <div class="kpi-hero-card roxo">
+      <div class="kpi-hero-label">Preventivas</div>
+      <div class="kpi-hero-valor">${k.preventivas}</div>
+      <div class="kpi-hero-sub">${k.total ? Math.round(k.preventivas/k.total*100) : 0}% do total</div>
+    </div>
+    <div class="kpi-hero-card ${corTaxa(k.taxa)}">
+      <div class="kpi-hero-label">Taxa de Conclusão</div>
+      <div class="kpi-hero-valor">${k.taxa}%</div>
+      <div class="kpi-hero-sub">${k.fechados} de ${k.total} encerrados</div>
+    </div>
+  `;
+  conteudo.appendChild(hero);
+
+  // KPIs secundários
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  kpiGrid.innerHTML = `
+    <div class="kpi-card verde">
+      <div class="kpi-label">Encerrados</div>
+      <div class="kpi-valor">${k.fechados}</div>
+      <div class="kpi-detalhe">finalizados com sucesso</div>
+    </div>
+    <div class="kpi-card vermelho">
+      <div class="kpi-label">Em Aberto</div>
+      <div class="kpi-valor">${k.abertos}</div>
+      <div class="kpi-detalhe">aguardando atendimento</div>
+    </div>
+    <div class="kpi-card azul">
+      <div class="kpi-label">Lojas Atendidas</div>
+      <div class="kpi-valor">${new Set(CHAMADOS_FILTRADOS.map(c => c.lojaNorm)).size}</div>
+      <div class="kpi-detalhe">unidades com chamados</div>
+    </div>
+    <div class="kpi-card amarelo">
+      <div class="kpi-label">Prestadores</div>
+      <div class="kpi-valor">${new Set(CHAMADOS_FILTRADOS.map(c => c.atendente)).size}</div>
+      <div class="kpi-detalhe">atendentes ativos</div>
+    </div>
+  `;
+  conteudo.appendChild(kpiGrid);
+
+  // Gráficos
+  const grafWrap = document.createElement("div");
+  grafWrap.className = "grafico-card";
+  grafWrap.innerHTML = `
+    <div class="grafico-titulo">Distribuição: Preventivas x Corretivas</div>
+    <div class="grafico-sub">Comparativo de tipos de chamado</div>
+    <div class="grafico-wrap"><canvas id="grafico-pizza"></canvas></div>
+  `;
+  conteudo.appendChild(grafWrap);
+
+  const grafTop = document.createElement("div");
+  grafTop.className = "grafico-card";
+  grafTop.innerHTML = `
+    <div class="grafico-titulo">Top 10 Prestadores por Volume</div>
+    <div class="grafico-sub">Prestadores com mais chamados</div>
+    <div class="grafico-wrap"><canvas id="grafico-top"></canvas></div>
+  `;
+  conteudo.appendChild(grafTop);
+
+  // Seção Categorias
+  const secTitle = document.createElement("div");
+  secTitle.className = "section-title";
+  secTitle.innerHTML = `
+    <span>🔧 Categorias</span>
+    <span class="tag">Clique para ver os prestadores</span>
+  `;
+  conteudo.appendChild(secTitle);
+
+  const catGrid = document.createElement("div");
+  catGrid.className = "cat-grid";
+  const cats = agruparPorCategoria(CHAMADOS_FILTRADOS)
+    .sort((a, b) => a.nome.localeCompare(b.nome));
+  cats.forEach(c => {
+    if (c.nome === "PCM" || c.nome === "Extras NSC" || c.nome === "Extras DJA" || c.nome === "Outros") return;
+    const cls = corTaxa(c.taxa);
+    const card = document.createElement("div");
+    card.className = "cat-card " + cls;
+    card.innerHTML = `
+      <div class="cat-nome">${c.nome}</div>
+      <div class="cat-info-grid">
+        <div class="cat-info"><div class="cat-info-label">Total</div><div class="cat-info-valor">${c.total}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Fechados</div><div class="cat-info-valor">${c.fechados}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Abertos</div><div class="cat-info-valor">${c.abertos}</div></div>
+      </div>
+      <div class="cat-progresso">
+        <span class="cat-progresso-label">Conclusão</span>
+        <span class="badge ${cls}">${c.taxa}%</span>
+      </div>
+    `;
+    card.onclick = () => {
+      ABA_ATUAL = "categorias";
+      CATEGORIA_SELECIONADA = c.nome;
+      atualizarAbaAtiva();
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(el => { if (el.id !== "abas-container") el.remove(); });
+      renderizarDetalheCategoria(c.nome);
+    };
+    catGrid.appendChild(card);
+  });
+  conteudo.appendChild(catGrid);
+
+  // Renderiza gráficos
+  setTimeout(() => desenharGraficos(k), 50);
+}
+
+// ============================================================
+// DESENHAR GRÁFICOS (Chart.js)
+// ============================================================
+function desenharGraficos(kpis) {
+  // Destrói gráficos antigos
+  Object.values(GRAFICOS).forEach(g => { try { g.destroy(); } catch(e){} });
+  GRAFICOS = {};
+
+  const canvasPizza = document.getElementById("grafico-pizza");
+  if (canvasPizza) {
+    GRAFICOS.pizza = new Chart(canvasPizza, {
+      type: "doughnut",
+      data: {
+        labels: ["Preventivas", "Corretivas"],
+        datasets: [{
+          data: [kpis.preventivas, kpis.corretivas],
+          backgroundColor: [CORES.roxo, CORES.laranja],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: "bottom", labels: { font: { size: 13, weight: "600" } } }
+        }
+      }
+    });
+  }
+
+  const canvasTop = document.getElementById("grafico-top");
+  if (canvasTop) {
+    const top = agruparPor(CHAMADOS_FILTRADOS, c => c.atendente)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+    GRAFICOS.top = new Chart(canvasTop, {
+      type: "bar",
+      data: {
+        labels: top.map(t => t.nome.length > 25 ? t.nome.substring(0, 22) + "..." : t.nome),
+        datasets: [{
+          label: "Chamados",
+          data: top.map(t => t.total),
+          backgroundColor: CORES.azul,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: "y",
+        plugins: { legend: { display: false } },
+        scales: { x: { beginAtZero: true } }
+      }
+    });
+  }
+}
+
+// >>> FIM PARTE 10 <<<
+// ============================================================
+// ABA SUBGERENTES — Ranking por taxa de conclusão
+// ============================================================
+function renderizarSubgerentes() {
+  const conteudo = document.getElementById("conteudo");
+
+  const secTitle = document.createElement("div");
+  secTitle.className = "section-title";
+  secTitle.innerHTML = `
+    <span>👔 Subgerentes</span>
+    <span class="tag">Ranking por taxa de conclusão</span>
+  `;
+  conteudo.appendChild(secTitle);
+
+  const dados = agruparPorSubgerente(CHAMADOS_FILTRADOS)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (dados.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum subgerente encontrado.</div>`;
+    return;
+  }
+
+  // Tabela de ranking
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Subgerente</th>
+        <th>Regional</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${dados.map((d, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(d.taxa);
+        const regional = SUBGERENTES[d.nome] ? SUBGERENTES[d.nome].regional : "—";
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-subg="${d.nome}">${d.nome}</span></td>
+            <td>${regional}</td>
+            <td class="num">${d.total}</td>
+            <td class="num">${d.fechados}</td>
+            <td class="num">${d.abertos}</td>
+            <td class="taxa"><span class="${cor}">${d.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  // Cards detalhados por subgerente
+  const secCards = document.createElement("div");
+  secCards.className = "section-title";
+  secCards.innerHTML = `<span>Detalhes por Subgerente</span>`;
+  conteudo.appendChild(secCards);
+
+  const wrap = document.createElement("div");
+  wrap.style.display = "flex";
+  wrap.style.flexDirection = "column";
+  wrap.style.gap = "16px";
+
+  dados.forEach(d => {
+    const info = SUBGERENTES[d.nome] || {};
+    const cor = corTaxa(d.taxa);
+    const card = document.createElement("div");
+    card.className = "sub-card " + cor;
+    card.innerHTML = `
+      <div class="sub-header">
+        <div>
+          <div class="sub-nome">${d.nome}</div>
+          <div class="sub-regional">Regional: ${info.regional || "—"}</div>
+        </div>
+        <span class="sub-badge ${cor}">${d.taxa}% de conclusão</span>
+      </div>
+      <div class="sub-info-grid">
+        <div class="sub-info"><div class="sub-info-label">Total</div><div class="sub-info-valor">${d.total}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Fechados</div><div class="sub-info-valor">${d.fechados}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Abertos</div><div class="sub-info-valor">${d.abertos}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Preventivas</div><div class="sub-info-valor">${d.preventivas}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Corretivas</div><div class="sub-info-valor">${d.corretivas}</div></div>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+  conteudo.appendChild(wrap);
+
+  // Cliques na tabela levam para detalhe
+  conteudo.querySelectorAll("[data-subg]").forEach(el => {
+    el.onclick = () => {
+      SUBGERENTE_SELECIONADO = el.dataset.subg;
+      ABA_ATUAL = "subgerentes";
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalheSubgerente(el.dataset.subg);
+    };
+  });
+}
+
+// ============================================================
+// DETALHE DE UM SUBGERENTE
+// ============================================================
+function renderizarDetalheSubgerente(nome) {
+  const conteudo = document.getElementById("conteudo");
+  const info = SUBGERENTES[nome] || {};
+
+  const btn = document.createElement("button");
+  btn.className = "btn-voltar";
+  btn.textContent = "← Voltar";
+  btn.onclick = () => trocarAba("subgerentes");
+  conteudo.appendChild(btn);
+
+  const titulo = document.createElement("div");
+  titulo.className = "detalhe-titulo";
+  titulo.textContent = "👔 " + nome + " — Regional " + (info.regional || "—");
+  conteudo.appendChild(titulo);
+
+   // Separa os dados
+  const filtPrev = filt.filter(c => c.tipo === "preventiva");
+  const filtCorr = filt.filter(c => c.tipo === "corretiva");
+  
+  const prevFechados = filtPrev.filter(c => c.statusCls === "fechado").length;
+  const prevAbertos = filtPrev.length - prevFechados;
+  
+  const corrFechados = filtCorr.filter(c => c.statusCls === "fechado").length;
+  const corrAbertos = filtCorr.length - corrFechados;
+
+  // LINHA 1: GERAL
+  const divGeral = document.createElement("div");
+  divGeral.innerHTML = `<div class="detalhe-titulo-secao" style="color:#1B2A5C;">Visão Geral</div>`;
+  const linhaGeral = document.createElement("div");
+  linhaGeral.className = "detalhe-bloco-linha";
+  linhaGeral.innerHTML = `
+    <div class="kpi-card azul"><div class="kpi-label">Total Geral</div><div class="kpi-valor">${total}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${fechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${abertos}</div></div>
+    <div class="kpi-card ${corTaxa(taxa)}"><div class="kpi-label">Taxa de Conclusão</div><div class="kpi-valor">${taxa}%</div></div>
+  `;
+  divGeral.appendChild(linhaGeral);
+  conteudo.appendChild(divGeral);
+
+  // LINHA 2: CORRETIVAS
+  const divCorr = document.createElement("div");
+  divCorr.innerHTML = `<div class="detalhe-titulo-secao corretiva">Corretivas</div>`;
+  const linhaCorr = document.createElement("div");
+  linhaCorr.className = "detalhe-bloco-linha tres-colunas";
+  linhaCorr.innerHTML = `
+    <div class="kpi-card laranja"><div class="kpi-label">Total</div><div class="kpi-valor">${filtCorr.length}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${corrFechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${corrAbertos}</div></div>
+  `;
+  divCorr.appendChild(linhaCorr);
+  conteudo.appendChild(divCorr);
+
+  // LINHA 3: PREVENTIVAS
+  const divPrev = document.createElement("div");
+  divPrev.innerHTML = `<div class="detalhe-titulo-secao preventiva">Preventivas</div>`;
+  const linhaPrev = document.createElement("div");
+  linhaPrev.className = "detalhe-bloco-linha tres-colunas";
+  linhaPrev.innerHTML = `
+    <div class="kpi-card roxo"><div class="kpi-label">Total</div><div class="kpi-valor">${filtPrev.length}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${prevFechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${prevAbertos}</div></div>
+  `;
+  divPrev.appendChild(linhaPrev);
+  conteudo.appendChild(divPrev);
+
+  // Tabela de prestadores dentro do subgerente (ranking)
+  const sec = document.createElement("div");
+  sec.className = "section-title";
+  sec.innerHTML = `<span>Prestadores deste subgerente</span><span class="tag">Ranking por taxa</span>`;
+  conteudo.appendChild(sec);
+
+  const prestadores = agruparPor(filt, c => c.atendente)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (prestadores.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum prestador encontrado.</div>`;
+    return;
+  }
+
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Prestador</th>
+        <th>Categoria</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${prestadores.map((p, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(p.taxa);
+        const cat = classificarAtendente(p.nome).cat;
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-prest="${p.nome}">${p.nome}</span></td>
+            <td>${cat}</td>
+            <td class="num">${p.total}</td>
+            <td class="num">${p.fechados}</td>
+            <td class="num">${p.abertos}</td>
+            <td class="taxa"><span class="${cor}">${p.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  conteudo.querySelectorAll("[data-prest]").forEach(el => {
+    el.onclick = () => {
+      PRESTADOR_SELECIONADO = el.dataset.prest;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(el.dataset.prest, () => renderizarDetalheSubgerente(nome));
+    };
+  });
+}
+
+// >>> FIM PARTE 11 <<<
+// ============================================================
+// ABA REGIONAIS — Ranking por taxa de conclusão
+// ============================================================
+function renderizarRegionais() {
+  const conteudo = document.getElementById("conteudo");
+
+  const secTitle = document.createElement("div");
+  secTitle.className = "section-title";
+  secTitle.innerHTML = `
+    <span>🗺️ Regionais</span>
+    <span class="tag">Ranking por taxa de conclusão</span>
+  `;
+  conteudo.appendChild(secTitle);
+
+  const dados = agruparPorRegional(CHAMADOS_FILTRADOS)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (dados.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum regional encontrado.</div>`;
+    return;
+  }
+
+  // Tabela de ranking
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Regional</th>
+        <th>Subgerente</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${dados.map((d, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(d.taxa);
+        const subg = REGIONAL_PARA_SUBGERENTE[d.nome] || "—";
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-reg="${d.nome}">${d.nome}</span></td>
+            <td>${subg}</td>
+            <td class="num">${d.total}</td>
+            <td class="num">${d.fechados}</td>
+            <td class="num">${d.abertos}</td>
+            <td class="taxa"><span class="${cor}">${d.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  // Cards detalhados
+  const secCards = document.createElement("div");
+  secCards.className = "section-title";
+  secCards.innerHTML = `<span>Detalhes por Regional</span>`;
+  conteudo.appendChild(secCards);
+
+  const wrap = document.createElement("div");
+  wrap.style.display = "flex";
+  wrap.style.flexDirection = "column";
+  wrap.style.gap = "16px";
+
+  dados.forEach(d => {
+    const subg = REGIONAL_PARA_SUBGERENTE[d.nome] || "—";
+    const cor = corTaxa(d.taxa);
+    const card = document.createElement("div");
+    card.className = "sub-card " + cor;
+    card.innerHTML = `
+      <div class="sub-header">
+        <div>
+          <div class="sub-nome">${d.nome}</div>
+          <div class="sub-regional">Subgerente: ${subg}</div>
+        </div>
+        <span class="sub-badge ${cor}">${d.taxa}% de conclusão</span>
+      </div>
+      <div class="sub-info-grid">
+        <div class="sub-info"><div class="sub-info-label">Total</div><div class="sub-info-valor">${d.total}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Fechados</div><div class="sub-info-valor">${d.fechados}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Abertos</div><div class="sub-info-valor">${d.abertos}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Preventivas</div><div class="sub-info-valor">${d.preventivas}</div></div>
+        <div class="sub-info"><div class="sub-info-label">Corretivas</div><div class="sub-info-valor">${d.corretivas}</div></div>
+      </div>
+    `;
+    wrap.appendChild(card);
+  });
+  conteudo.appendChild(wrap);
+
+  // Cliques
+  conteudo.querySelectorAll("[data-reg]").forEach(el => {
+    el.onclick = () => {
+      REGIONAL_SELECIONADO = el.dataset.reg;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalheRegional(el.dataset.reg);
+    };
+  });
+}
+
+// ============================================================
+// DETALHE DE UM REGIONAL
+// ============================================================
+function renderizarDetalheRegional(nome) {
+  const conteudo = document.getElementById("conteudo");
+
+  const btn = document.createElement("button");
+  btn.className = "btn-voltar";
+  btn.textContent = "← Voltar";
+  btn.onclick = () => trocarAba("regionais");
+  conteudo.appendChild(btn);
+
+  const subg = REGIONAL_PARA_SUBGERENTE[nome] || "—";
+  const titulo = document.createElement("div");
+  titulo.className = "detalhe-titulo";
+  titulo.textContent = "🗺️ " + nome + " — Subgerente " + subg;
+  conteudo.appendChild(titulo);
+
+  // Filtra pelos chamados onde a loja pertence à região deste regional
+  const subgDono = REGIONAL_PARA_SUBGERENTE[nome];
+  const filt = CHAMADOS_FILTRADOS.filter(c => c.subg === subgDono);
+
+  const total = filt.length;
+  const fechados = filt.filter(c => c.statusCls === "fechado").length;
+  const abertos = total - fechados;
+  const taxa = calcularTaxa(total, fechados);
+
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  kpiGrid.innerHTML = `
+    <div class="kpi-card azul"><div class="kpi-label">Total</div><div class="kpi-valor">${total}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${fechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${abertos}</div></div>
+    <div class="kpi-card ${corTaxa(taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${taxa}%</div></div>
+  `;
+  conteudo.appendChild(kpiGrid);
+
+  // Tabela de subgerente correspondente
+  const sec = document.createElement("div");
+  sec.className = "section-title";
+  sec.innerHTML = `<span>Subgerente vinculado</span>`;
+  conteudo.appendChild(sec);
+
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Subgerente</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="nome-clicavel" data-subg="${subgDono}">${subgDono}</span></td>
+        <td class="num">${total}</td>
+        <td class="num">${fechados}</td>
+        <td class="num">${abertos}</td>
+        <td class="taxa"><span class="${corTaxa(taxa)}">${taxa}%</span></td>
+      </tr>
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  conteudo.querySelectorAll("[data-subg]").forEach(el => {
+    el.onclick = () => {
+      SUBGERENTE_SELECIONADO = el.dataset.subg;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalheSubgerente(el.dataset.subg);
+    };
+  });
+
+  // Prestadores desta região (ranking)
+  const secP = document.createElement("div");
+  secP.className = "section-title";
+  secP.innerHTML = `<span>Prestadores desta região</span><span class="tag">Ranking</span>`;
+  conteudo.appendChild(secP);
+
+  const prestadores = agruparPor(filt, c => c.atendente)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (prestadores.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum prestador nesta região.</div>`;
+    return;
+  }
+
+  const tabelaP = document.createElement("table");
+  tabelaP.className = "tabela";
+  tabelaP.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Prestador</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${prestadores.map((p, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(p.taxa);
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-prest="${p.nome}">${p.nome}</span></td>
+            <td class="num">${p.total}</td>
+            <td class="num">${p.fechados}</td>
+            <td class="num">${p.abertos}</td>
+            <td class="taxa"><span class="${cor}">${p.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabelaP);
+
+  conteudo.querySelectorAll("[data-prest]").forEach(el => {
+    el.onclick = () => {
+      PRESTADOR_SELECIONADO = el.dataset.prest;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(el.dataset.prest, () => renderizarDetalheRegional(nome));
+    };
+  });
+}
+
+// >>> FIM PARTE 12 <<<
+// ============================================================
+// ABA CATEGORIAS — Grid de categorias + detalhe
+// ============================================================
+function renderizarCategorias() {
+  const conteudo = document.getElementById("conteudo");
+
+  const secTitle = document.createElement("div");
+  secTitle.className = "section-title";
+  secTitle.innerHTML = `
+    <span>🔧 Categorias</span>
+    <span class="tag">Ranking por taxa de conclusão</span>
+  `;
+  conteudo.appendChild(secTitle);
+
+  const cats = agruparPorCategoria(CHAMADOS_FILTRADOS)
+    .filter(c => c.nome !== "PCM" && c.nome !== "Extras NSC" && c.nome !== "Extras DJA" && c.nome !== "Outros")
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (cats.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhuma categoria encontrada.</div>`;
+    return;
+  }
+
+  // Tabela de ranking
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Categoria</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${cats.map((c, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(c.taxa);
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-cat="${c.nome}">${c.nome}</span></td>
+            <td class="num">${c.total}</td>
+            <td class="num">${c.fechados}</td>
+            <td class="num">${c.abertos}</td>
+            <td class="taxa"><span class="${cor}">${c.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  // Cards
+  const secCards = document.createElement("div");
+  secCards.className = "section-title";
+  secCards.innerHTML = `<span>Detalhes por Categoria</span>`;
+  conteudo.appendChild(secCards);
+
+  const grid = document.createElement("div");
+  grid.className = "cat-grid";
+  cats.forEach(c => {
+    const cls = corTaxa(c.taxa);
+    const card = document.createElement("div");
+    card.className = "cat-card " + cls;
+    card.innerHTML = `
+      <div class="cat-nome">${c.nome}</div>
+      <div class="cat-info-grid">
+        <div class="cat-info"><div class="cat-info-label">Total</div><div class="cat-info-valor">${c.total}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Fechados</div><div class="cat-info-valor">${c.fechados}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Abertos</div><div class="cat-info-valor">${c.abertos}</div></div>
+      </div>
+      <div class="cat-progresso">
+        <span class="cat-progresso-label">Conclusão</span>
+        <span class="badge ${cls}">${c.taxa}%</span>
+      </div>
+    `;
+    card.onclick = () => {
+      CATEGORIA_SELECIONADA = c.nome;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(el => { if (el.id !== "abas-container") el.remove(); });
+      renderizarDetalheCategoria(c.nome);
+    };
+    grid.appendChild(card);
+  });
+  conteudo.appendChild(grid);
+
+  conteudo.querySelectorAll("[data-cat]").forEach(el => {
+    el.onclick = () => {
+      CATEGORIA_SELECIONADA = el.dataset.cat;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalheCategoria(el.dataset.cat);
+    };
+  });
+}
+
+// ============================================================
+// DETALHE DE UMA CATEGORIA — Prestadores com ranking
+// ============================================================
+function renderizarDetalheCategoria(categoria) {
+  const conteudo = document.getElementById("conteudo");
+
+  const btn = document.createElement("button");
+  btn.className = "btn-voltar";
+  btn.textContent = "← Voltar para Categorias";
+  btn.onclick = () => trocarAba("categorias");
+  conteudo.appendChild(btn);
+
+  const titulo = document.createElement("div");
+  titulo.className = "detalhe-titulo";
+  titulo.textContent = "🔧 " + categoria;
+  conteudo.appendChild(titulo);
+
+  // KPIs da categoria
+  const filt = CHAMADOS_FILTRADOS.filter(c => c.categoria === categoria);
+  const total = filt.length;
+  const fechados = filt.filter(c => c.statusCls === "fechado").length;
+  const abertos = total - fechados;
+  const taxa = calcularTaxa(total, fechados);
+
+    // Separa preventivas e corretivas
+  const filtPrev = filt.filter(c => c.tipo === "preventiva");
+  const filtCorr = filt.filter(c => c.tipo === "corretiva");
+
+  const prevTotal = filtPrev.length;
+  const prevFechados = filtPrev.filter(c => c.statusCls === "fechado").length;
+  const prevAbertos = prevTotal - prevFechados;
+  
+  const corrTotal = filtCorr.length;
+  const corrFechados = filtCorr.filter(c => c.statusCls === "fechado").length;
+  const corrAbertos = corrTotal - corrFechados;
+
+  // KPIs Gerais
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  kpiGrid.innerHTML = `
+    <div class="kpi-card azul"><div class="kpi-label">Total Geral</div><div class="kpi-valor">${total}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${fechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${abertos}</div></div>
+    <div class="kpi-card ${corTaxa(taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${taxa}%</div></div>
+  `;
+  conteudo.appendChild(kpiGrid);
+
+  // Blocos Separados
+  const splitDiv = document.createElement("div");
+  splitDiv.className = "sub-detalhe-split";
+  splitDiv.innerHTML = `
+    <div class="sub-bloco corretiva">
+      <div class="sub-bloco-titulo">🟠 Corretivas</div>
+      <div class="sub-bloco-kpis">
+        <div class="sub-kpi"><div class="sub-kpi-label">Total</div><div class="sub-kpi-valor">${corrTotal}</div></div>
+        <div class="sub-kpi"><div class="sub-kpi-label">Fechados</div><div class="sub-kpi-valor">${corrFechados}</div></div>
+        <div class="sub-kpi"><div class="sub-kpi-label">Abertos</div><div class="sub-kpi-valor">${corrAbertos}</div></div>
+      </div>
+    </div>
+    <div class="sub-bloco preventiva">
+      <div class="sub-bloco-titulo">🟣 Preventivas</div>
+      <div class="sub-bloco-kpis">
+        <div class="sub-kpi"><div class="sub-kpi-label">Total</div><div class="sub-kpi-valor">${prevTotal}</div></div>
+        <div class="sub-kpi"><div class="sub-kpi-label">Fechados</div><div class="sub-kpi-valor">${prevFechados}</div></div>
+        <div class="sub-kpi"><div class="sub-kpi-label">Abertos</div><div class="sub-kpi-valor">${prevAbertos}</div></div>
+      </div>
+    </div>
+  `;
+  conteudo.appendChild(splitDiv);
+
+  // Ranking de prestadores
+  const sec = document.createElement("div");
+  sec.className = "section-title";
+  sec.innerHTML = `<span>Prestadores desta categoria</span><span class="tag">Ranking por taxa</span>`;
+  conteudo.appendChild(sec);
+
+  const prestadores = agruparPorPrestador(CHAMADOS_FILTRADOS, categoria)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (prestadores.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum prestador nesta categoria.</div>`;
+    return;
+  }
+
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Prestador</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${prestadores.map((p, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(p.taxa);
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-prest="${p.nome}">${p.nome}</span></td>
+            <td class="num">${p.total}</td>
+            <td class="num">${p.fechados}</td>
+            <td class="num">${p.abertos}</td>
+            <td class="taxa"><span class="${cor}">${p.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  // Cards com detalhes por prestador
+  const grid = document.createElement("div");
+  grid.className = "prest-grid";
+  prestadores.forEach(p => {
+    const stats = estatisticasPrestador(CHAMADOS_FILTRADOS, p.nome);
+    const cls = corTaxa(stats.taxa);
+    const card = document.createElement("div");
+    card.className = "prest-card " + cls;
+    card.innerHTML = `
+      <div class="prest-header">
+        <div class="prest-nome">${stats.nome}</div>
+        <div class="prest-cat-badge">${categoria}</div>
+      </div>
+      <div class="cat-info-grid">
+        <div class="cat-info"><div class="cat-info-label">Total</div><div class="cat-info-valor">${stats.total}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Fechados</div><div class="cat-info-valor">${stats.fechados}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Abertos</div><div class="cat-info-valor">${stats.abertos}</div></div>
+      </div>
+      <div class="cat-progresso">
+        <span class="cat-progresso-label">Conclusão</span>
+        <span class="badge ${cls}">${stats.taxa}%</span>
+      </div>
+    `;
+    card.onclick = () => {
+      PRESTADOR_SELECIONADO = stats.nome;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(stats.nome, () => renderizarDetalheCategoria(categoria));
+    };
+    grid.appendChild(card);
+  });
+  conteudo.appendChild(grid);
+
+  conteudo.querySelectorAll("[data-prest]").forEach(el => {
+    el.onclick = () => {
+      PRESTADOR_SELECIONADO = el.dataset.prest;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(el.dataset.prest, () => renderizarDetalheCategoria(categoria));
+    };
+  });
+}
+
+// ============================================================
+// DETALHE DE UM PRESTADOR (com lojas)
+// ============================================================
+function renderizarDetalhePrestador(nome, voltarFn) {
+  const conteudo = document.getElementById("conteudo");
+
+  const btn = document.createElement("button");
+  btn.className = "btn-voltar";
+  btn.textContent = "← Voltar";
+  btn.onclick = voltarFn || (() => trocarAba("categorias"));
+  conteudo.appendChild(btn);
+
+  const stats = estatisticasPrestador(CHAMADOS_FILTRADOS, nome);
+
+  const titulo = document.createElement("div");
+  titulo.className = "detalhe-titulo";
+  titulo.textContent = "👤 " + stats.nome + " — " + stats.categoria;
+  conteudo.appendChild(titulo);
+
+  // KPIs
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  kpiGrid.innerHTML = `
+    <div class="kpi-card azul"><div class="kpi-label">Total</div><div class="kpi-valor">${stats.total}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${stats.fechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${stats.abertos}</div></div>
+    <div class="kpi-card ${corTaxa(stats.taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${stats.taxa}%</div></div>
+  `;
+  conteudo.appendChild(kpiGrid);
+
+  // Blocos de lojas
+  const wrap = document.createElement("div");
+
+  // Mais atende
+  if (stats.lojasMaisAtende.length) {
+    wrap.innerHTML += `
+      <div class="bloco-lojas">
+        <div class="bloco-titulo">🏆 Lojas que mais atende</div>
+        ${stats.lojasMaisAtende.map(l => `<span class="loja-tag">Loja ${l.loja} • ${l.total}</span>`).join("")}
+      </div>
+    `;
+  }
+
+  // Menos atende
+  if (stats.lojasMenosAtende.length) {
+    wrap.innerHTML += `
+      <div class="bloco-lojas">
+        <div class="bloco-titulo">🔻 Lojas que menos atende</div>
+        ${stats.lojasMenosAtende.map(l => `<span class="loja-tag">Loja ${l.loja} • ${l.total}</span>`).join("")}
+      </div>
+    `;
+  }
+
+  // Mais abertos
+  if (stats.lojasMaisAbertos.filter(l => l.abertos > 0).length) {
+    wrap.innerHTML += `
+      <div class="bloco-lojas">
+        <div class="bloco-titulo">⚠️ Lojas com mais chamados abertos</div>
+        ${stats.lojasMaisAbertos.filter(l => l.abertos > 0).map(l => `<span class="loja-tag aberto">Loja ${l.loja} • ${l.abertos} abertos</span>`).join("")}
+      </div>
+    `;
+  }
+
+  // Não atendidas
+  if (stats.lojasNaoAtendidas.length) {
+    wrap.innerHTML += `
+      <div class="bloco-lojas">
+        <div class="bloco-titulo">🚫 Lojas que NÃO atendeu (mas são da região)</div>
+        ${stats.lojasNaoAtendidas.map(l => `<span class="loja-tag extra">Loja ${l}</span>`).join("")}
+      </div>
+    `;
+  }
+
+  conteudo.appendChild(wrap);
+}
+
+// >>> FIM PARTE 13 <<<
+// ============================================================
+// ABA PCM — Somente atendentes PCM
+// ============================================================
+function renderizarPCM() {
+  const conteudo = document.getElementById("conteudo");
+
+  const secTitle = document.createElement("div");
+  secTitle.className = "section-title";
+  secTitle.innerHTML = `
+    <span>📋 PCM</span>
+    <span class="tag">Ranking por taxa de conclusão</span>
+  `;
+  conteudo.appendChild(secTitle);
+
+  const filt = CHAMADOS_FILTRADOS.filter(c => c.pcm);
+  const total = filt.length;
+  const fechados = filt.filter(c => c.statusCls === "fechado").length;
+  const abertos = total - fechados;
+  const taxa = calcularTaxa(total, fechados);
+
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  kpiGrid.innerHTML = `
+    <div class="kpi-card roxo"><div class="kpi-label">Total</div><div class="kpi-valor">${total}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${fechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${abertos}</div></div>
+    <div class="kpi-card ${corTaxa(taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${taxa}%</div></div>
+  `;
+  conteudo.appendChild(kpiGrid);
+
+  const prestadores = agruparPor(filt, c => c.atendente)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (prestadores.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum atendente PCM encontrado.</div>`;
+    return;
+  }
+
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Atendente</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${prestadores.map((p, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(p.taxa);
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-prest="${p.nome}">${p.nome}</span></td>
+            <td class="num">${p.total}</td>
+            <td class="num">${p.fechados}</td>
+            <td class="num">${p.abertos}</td>
+            <td class="taxa"><span class="${cor}">${p.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  // Cards
+  const grid = document.createElement("div");
+  grid.className = "prest-grid";
+  prestadores.forEach(p => {
+    const stats = estatisticasPrestador(filt, p.nome);
+    const cls = corTaxa(stats.taxa);
+    const card = document.createElement("div");
+    card.className = "prest-card " + cls;
+    card.innerHTML = `
+      <div class="prest-header">
+        <div class="prest-nome">${stats.nome}</div>
+        <div class="prest-cat-badge">PCM</div>
+      </div>
+      <div class="cat-info-grid">
+        <div class="cat-info"><div class="cat-info-label">Total</div><div class="cat-info-valor">${stats.total}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Fechados</div><div class="cat-info-valor">${stats.fechados}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Abertos</div><div class="cat-info-valor">${stats.abertos}</div></div>
+      </div>
+      <div class="cat-progresso">
+        <span class="cat-progresso-label">Conclusão</span>
+        <span class="badge ${cls}">${stats.taxa}%</span>
+      </div>
+    `;
+    card.onclick = () => {
+      PRESTADOR_SELECIONADO = stats.nome;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(stats.nome, () => trocarAba("pcm"));
+    };
+    grid.appendChild(card);
+  });
+  conteudo.appendChild(grid);
+
+  conteudo.querySelectorAll("[data-prest]").forEach(el => {
+    el.onclick = () => {
+      PRESTADOR_SELECIONADO = el.dataset.prest;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(el.dataset.prest, () => trocarAba("pcm"));
+    };
+  });
+}
+
+// ============================================================
+// ABA EXTRAS — NSC Extras + DJA Extras
+// ============================================================
+function renderizarExtras() {
+  const conteudo = document.getElementById("conteudo");
+
+  const secTitle = document.createElement("div");
+  secTitle.className = "section-title";
+  secTitle.innerHTML = `
+    <span>⭐ Extras</span>
+    <span class="tag">Atendimentos fora da região</span>
+  `;
+  conteudo.appendChild(secTitle);
+
+  const filt = listarExtras(CHAMADOS_FILTRADOS);
+  const total = filt.length;
+  const fechados = filt.filter(c => c.statusCls === "fechado").length;
+  const abertos = total - fechados;
+  const taxa = calcularTaxa(total, fechados);
+
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  kpiGrid.innerHTML = `
+    <div class="kpi-card laranja"><div class="kpi-label">Total</div><div class="kpi-valor">${total}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${fechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${abertos}</div></div>
+    <div class="kpi-card ${corTaxa(taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${taxa}%</div></div>
+  `;
+  conteudo.appendChild(kpiGrid);
+
+  const prestadores = agruparPor(filt, c => c.atendente)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (prestadores.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum atendimento EXTRA encontrado.</div>`;
+    return;
+  }
+
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Prestador EXTRA</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${prestadores.map((p, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(p.taxa);
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-prest="${p.nome}">${p.nome}</span></td>
+            <td class="num">${p.total}</td>
+            <td class="num">${p.fechados}</td>
+            <td class="num">${p.abertos}</td>
+            <td class="taxa"><span class="${cor}">${p.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  const grid = document.createElement("div");
+  grid.className = "prest-grid";
+  prestadores.forEach(p => {
+    const stats = estatisticasPrestador(filt, p.nome);
+    const cls = corTaxa(stats.taxa);
+    const card = document.createElement("div");
+    card.className = "prest-card " + cls;
+    card.innerHTML = `
+      <div class="prest-header">
+        <div class="prest-nome">${stats.nome}</div>
+        <div class="prest-cat-badge">EXTRA</div>
+      </div>
+      <div class="cat-info-grid">
+        <div class="cat-info"><div class="cat-info-label">Total</div><div class="cat-info-valor">${stats.total}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Fechados</div><div class="cat-info-valor">${stats.fechados}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Abertos</div><div class="cat-info-valor">${stats.abertos}</div></div>
+      </div>
+      <div class="cat-progresso">
+        <span class="cat-progresso-label">Conclusão</span>
+        <span class="badge ${cls}">${stats.taxa}%</span>
+      </div>
+    `;
+    card.onclick = () => {
+      PRESTADOR_SELECIONADO = stats.nome;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(stats.nome, () => trocarAba("extras"));
+    };
+    grid.appendChild(card);
+  });
+  conteudo.appendChild(grid);
+
+  conteudo.querySelectorAll("[data-prest]").forEach(el => {
+    el.onclick = () => {
+      PRESTADOR_SELECIONADO = el.dataset.prest;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(el.dataset.prest, () => trocarAba("extras"));
+    };
+  });
+}
+
+// ============================================================
+// ABA OUTROS — Atendentes não mapeados
+// ============================================================
+function renderizarOutros() {
+  const conteudo = document.getElementById("conteudo");
+
+  const secTitle = document.createElement("div");
+  secTitle.className = "section-title";
+  secTitle.innerHTML = `
+    <span>❓ Outros</span>
+    <span class="tag">Atendentes não classificados</span>
+  `;
+  conteudo.appendChild(secTitle);
+
+  const filt = CHAMADOS_FILTRADOS.filter(c => c.categoria === "Outros");
+  const total = filt.length;
+  const fechados = filt.filter(c => c.statusCls === "fechado").length;
+  const abertos = total - fechados;
+  const taxa = calcularTaxa(total, fechados);
+
+  const kpiGrid = document.createElement("div");
+  kpiGrid.className = "kpi-grid";
+  kpiGrid.innerHTML = `
+    <div class="kpi-card azul"><div class="kpi-label">Total</div><div class="kpi-valor">${total}</div></div>
+    <div class="kpi-card verde"><div class="kpi-label">Fechados</div><div class="kpi-valor">${fechados}</div></div>
+    <div class="kpi-card vermelho"><div class="kpi-label">Abertos</div><div class="kpi-valor">${abertos}</div></div>
+    <div class="kpi-card ${corTaxa(taxa)}"><div class="kpi-label">Taxa</div><div class="kpi-valor">${taxa}%</div></div>
+  `;
+  conteudo.appendChild(kpiGrid);
+
+  const prestadores = agruparPor(filt, c => c.atendente)
+    .sort((a, b) => b.taxa - a.taxa || b.total - a.total);
+
+  if (prestadores.length === 0) {
+    conteudo.innerHTML += `<div class="vazio">Nenhum atendente em "Outros".</div>`;
+    return;
+  }
+
+  const tabela = document.createElement("table");
+  tabela.className = "tabela";
+  tabela.innerHTML = `
+    <thead>
+      <tr>
+        <th>Ranking</th>
+        <th>Atendente</th>
+        <th class="num">Total</th>
+        <th class="num">Fechados</th>
+        <th class="num">Abertos</th>
+        <th class="taxa">Taxa</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${prestadores.map((p, i) => {
+        const pos = i + 1;
+        const cls = pos === 1 ? "ouro" : pos === 2 ? "prata" : pos === 3 ? "bronze" : "";
+        const cor = corTaxa(p.taxa);
+        return `
+          <tr>
+            <td class="rank ${cls}">${medalha(pos)} ${pos}º</td>
+            <td><span class="nome-clicavel" data-prest="${p.nome}">${p.nome}</span></td>
+            <td class="num">${p.total}</td>
+            <td class="num">${p.fechados}</td>
+            <td class="num">${p.abertos}</td>
+            <td class="taxa"><span class="${cor}">${p.taxa}%</span></td>
+          </tr>
+        `;
+      }).join("")}
+    </tbody>
+  `;
+  conteudo.appendChild(tabela);
+
+  const grid = document.createElement("div");
+  grid.className = "prest-grid";
+  prestadores.forEach(p => {
+    const stats = estatisticasPrestador(filt, p.nome);
+    const cls = corTaxa(stats.taxa);
+    const card = document.createElement("div");
+    card.className = "prest-card " + cls;
+    card.innerHTML = `
+      <div class="prest-header">
+        <div class="prest-nome">${stats.nome}</div>
+        <div class="prest-cat-badge">Outros</div>
+      </div>
+      <div class="cat-info-grid">
+        <div class="cat-info"><div class="cat-info-label">Total</div><div class="cat-info-valor">${stats.total}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Fechados</div><div class="cat-info-valor">${stats.fechados}</div></div>
+        <div class="cat-info"><div class="cat-info-label">Abertos</div><div class="cat-info-valor">${stats.abertos}</div></div>
+      </div>
+      <div class="cat-progresso">
+        <span class="cat-progresso-label">Conclusão</span>
+        <span class="badge ${cls}">${stats.taxa}%</span>
+      </div>
+    `;
+    card.onclick = () => {
+      PRESTADOR_SELECIONADO = stats.nome;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(stats.nome, () => trocarAba("outros"));
+    };
+    grid.appendChild(card);
+  });
+  conteudo.appendChild(grid);
+
+  conteudo.querySelectorAll("[data-prest]").forEach(el => {
+    el.onclick = () => {
+      PRESTADOR_SELECIONADO = el.dataset.prest;
+      const cont = document.getElementById("conteudo");
+      Array.from(cont.children).forEach(c => { if (c.id !== "abas-container") c.remove(); });
+      renderizarDetalhePrestador(el.dataset.prest, () => trocarAba("outros"));
+    };
+  });
+}
+
+// >>> FIM PARTE 14 <<<
+// ============================================================
+// INICIALIZAÇÃO
+// ============================================================
+document.addEventListener("DOMContentLoaded", () => {
+  // Só inicia se o container existir
+  if (!document.getElementById("conteudo")) return;
+  carregarDados();
+});
+
+// ============================================================
+// ATALHOS DE TECLADO (opcional)
+// ============================================================
+document.addEventListener("keydown", (e) => {
+  // ESC volta para a home
+  if (e.key === "Escape") {
+    if (ABA_ATUAL !== "home" || CATEGORIA_SELECIONADA || SUBGERENTE_SELECIONADO || REGIONAL_SELECIONADO || PRESTADOR_SELECIONADO) {
+      CATEGORIA_SELECIONADA = null;
+      SUBGERENTE_SELECIONADO = null;
+      REGIONAL_SELECIONADO = null;
+      PRESTADOR_SELECIONADO = null;
+      trocarAba("home");
+    }
+  }
+});
+
+// ============================================================
+// LOG DE INICIALIZAÇÃO
+// ============================================================
+console.log("✅ Dashboard de Chamados — Grupo Koch carregado com sucesso.");
+
+// >>> FIM PARTE 15 <<<
+// >>> FIM PARTE 16 <<<
+</script>
+</body>
+</html>
